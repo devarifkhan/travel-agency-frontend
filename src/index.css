@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.coxs-bazar-image {
+    background-image: url('./assets/images/coxs-bazar-bg.jpg');
+}
+
+.sundarbans-image {
+    background-image: url('./assets/images/sundarbans.jpg');
+}
+
+.srimangal-image {
+    background-image: url('./assets/images/srimangal.jpeg');
+}
+
+.lalbagh-image {
+    background-image: url('./assets/images/lalbagfort.jpeg');
+}
+
+.ranga-image {
+    background-image: url('./assets/images/rangabandar.jpeg');
+}
+
+.saintmartin-image {
+    background-image: url('./assets/images/saintmartin.jpeg');
+}
