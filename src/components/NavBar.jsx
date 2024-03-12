@@ -53,20 +53,21 @@ export default function NavBar() {
               <Link to="/hotelresort">Hotel and Resort</Link>
             </li>
             <li>
-              <a>Weather</a>
+              {/* <a>Weather</a> */}
+              <Link to="/weather">Weather</Link>
             </li>
             <li>
-              <a>Blog</a>
+              {/* <a className="/blog">Blog</a> */}
+              <Link to="/blog">Blog</Link>
             </li>
 
             <li>
-              <a>Review</a>
+              {/* <a>Review</a> */}
+              <Link to="/review">Review</Link>
             </li>
             <li>
-              <a>Meet Us</a>
-            </li>
-            <li>
-              <a>Contact Us</a>
+              {/* <a>Contact Us</a> */}
+              <Link to="/contact">Contact Us</Link>
             </li>
           </ul>
         </div>

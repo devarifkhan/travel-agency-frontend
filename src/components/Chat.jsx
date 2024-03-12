@@ -1,173 +1,274 @@
-// import { useEffect, useMemo, useState } from "react";
-// import { io } from "socket.io-client";
-
-// export default function Chat() {
-//   const socket = useMemo(() => io("http://localhost:5000"), []);
-
-//   const [message, setMessage] = useState("");
-//   const [room, setRoom] = useState("");
-//   const [socketId, setSocketId] = useState("");
-//   const [messages, setMessages] = useState([]);
-//   const handler = (e) => {
-//     e.preventDefault();
-//     socket.emit("message", { message, room });
-//   };
-
-//   useEffect(() => {
-//     socket.on("connect", () => {
-//       console.log("Connected to server", socket.id);
-//       setSocketId(socket.id);
-//     });
-//     socket.on("welcome", (s) => {
-//       console.log(s);
-//     });
-//     socket.on("received", (data) => {
-//       console.log(data);
-//       setMessages((messages) => [...messages, data]);
-//     });
-//   });
-
-//   console.log(messages);
-
-//   return (
-//     <div>
-//       <h1>Socket IO</h1>
-//       <p>{socketId}</p>
-//       <form onSubmit={handler}>
-//         <input
-//           value={room}
-//           onChange={(e) => setRoom(e.target.value)}
-//           placeholder="Room"
-//           id="room"
-//           name="room"
-//           required="required"
-//           className="form-control input"
-//           autoComplete="off"
-//         />
-//         <input
-//           value={message}
-//           onChange={(e) => setMessage(e.target.value)}
-//           placeholder="message"
-//           id="message"
-//           name="message"
-//           required="required"
-//           className="form-control input"
-//           autoComplete="off"
-//         />
-//         <button type="submit" className="btn">
-//           Send
-//         </button>
-//       </form>
-//     </div>
-//   );
-// }
-
+// eslint-disable-next-line react-hooks/exhaustive-deps
 import { useEffect, useMemo, useState } from "react";
 import { io } from "socket.io-client";
+import { SiGooglemessages } from "react-icons/si";
+import axios from "axios";
+
 export default function Chat() {
   const socket = useMemo(() => io("http://localhost:5000"), []);
 
+  const [mes, setMes] = useState("");
+  const [messages, setMessages] = useState(null);
+  const [name, setName] = useState("");
+  const [show, setShow] = useState(true);
+  const [count, setCount] = useState(0);
+  const [sock, setSock] = useState(null);
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+
+  console.log(name, phone, email);
+
+  const fetchData = async () => {
+    console.log(sock);
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/getMessage/${name}`
+      );
+      console.log("Response:", response);
+      setMessages(response.data);
+    } catch (error) {
+      console.error("Error:", error.message);
+    }
+  };
+
   useEffect(() => {
+    fetchData();
+
+    const intervalId = setInterval(fetchData, 3000);
+
+    const handleReceivedMessage = (data) => {
+      setCount(data.count + 1);
+      console.log("handle receive message", data);
+    };
+
+    const handlePrivateMessage = (privateMessage) => {
+      console.log("Received private message from server:", privateMessage);
+    };
+
     socket.on("connect", () => {
       console.log("Connected to server", socket.id);
+      setSock(socket.id);
     });
-  });
+
+    socket.on("welcome", (s) => {
+      console.log(s);
+    });
+
+    socket.on("received", handleReceivedMessage);
+    socket.on("privateMessage", handlePrivateMessage);
+
+    return () => {
+      clearInterval(intervalId);
+      socket.off("received", handleReceivedMessage);
+      socket.off("privateMessage", handlePrivateMessage);
+    };
+  }, [name, socket, sock]);
+
+  const hanlderFirstChat = async () => {
+    const newCount = count + 1;
+    setCount(newCount);
+    const newMessage = {
+      name: name,
+      socketId: socket.id,
+      email: email,
+      phone: phone,
+      message: "How can I book a flight with your travel agency?",
+      count: newCount,
+    };
+    socket.emit("message", newMessage);
+    console.log("message sent by admin", newMessage);
+
+    fetchData();
+  };
+
+  const hanlderSecondChat = async () => {
+    const newCount = count + 1;
+    setCount(newCount);
+    const newMessage = {
+      name: name,
+      socketId: socket.id,
+      email: email,
+      phone: phone,
+      message: "Can you recommend family-friendly vacation packages?",
+      count: newCount,
+    };
+    socket.emit("message", newMessage);
+    console.log("message sent by admin", newMessage);
+    fetchData();
+  };
+
+  const hanlderThirdChat = async () => {
+    const newCount = count + 1;
+    setCount(newCount);
+    const newMessage = {
+      name: name,
+      socketId: socket.id,
+      email: email,
+      phone: phone,
+      message: "What documents do I need for international travel?",
+      count: newCount,
+    };
+    socket.emit("message", newMessage);
+    console.log("message sent by admin", newMessage);
+    fetchData();
+  };
+
+  const handler = async (e) => {
+    const newCount = count + 1;
+    setCount(newCount);
+
+    e.preventDefault();
+    const newMessage = {
+      name: name,
+      socketId: socket.id,
+      message: mes,
+      email: email,
+      phone: phone,
+      count: newCount,
+    };
+    socket.emit("message", newMessage);
+    console.log("message sent by user", newMessage);
+    setMes("");
+    fetchData();
+  };
+  const handleName = () => {
+    setShow(false);
+  };
+
+  console.log("HI", messages);
+
   return (
     <>
-      <div className="flex antialiased text-gray-800">
-        <div className="flex flex-row h-full w-full overflow-x-hidden">
-          <div className="flex flex-col py-8 pl-6 pr-2 w-64 bg-white flex-shrink-0">
-            <h1 className="text-center text-gray-600">Ariful Islam (me)</h1>
+      <div className="fixed bottom-0 right-0 p-20 px-20">
+        <button onClick={() => document.getElementById("modal").showModal()}>
+          <SiGooglemessages className="object-cover  h-12 w-12" />
+        </button>
+        <dialog id="modal" className="modal">
+          <div className="modal-box">
+            <h1 className="text-center text-4xl m-5">Chat To Admin</h1>
 
-            <div className="flex flex-col mt-8">
-              <div className="flex flex-row items-center justify-between text-xs">
-                <span className="font-bold">Active Conversations</span>
-                <span className="flex items-center justify-center bg-gray-300 h-4 w-4 rounded-full">
-                  4
-                </span>
-              </div>
-              <div className="flex flex-col space-y-1 mt-4 -mx-2 h-48 overflow-y-auto">
-                <button className="flex flex-row items-center hover:bg-gray-100 rounded-xl p-2">
-                  <div className="flex items-center justify-center h-8 w-8 bg-indigo-200 rounded-full">
-                    H
-                  </div>
-                  <div className="ml-2 text-sm font-semibold">Henry Boyd</div>
-                </button>
-                <button className="flex flex-row items-center hover:bg-gray-100 rounded-xl p-2">
-                  <div className="flex items-center justify-center h-8 w-8 bg-gray-200 rounded-full">
-                    M
-                  </div>
-                  <div className="ml-2 text-sm font-semibold">Marta Curtis</div>
-                  <div className="flex items-center justify-center ml-auto text-xs text-white bg-red-500 h-4 w-4 rounded leading-none">
-                    2
-                  </div>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col flex-auto h-90 p-6">
-            <div className="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4">
-              <div className="flex flex-col h-full overflow-x-auto mb-4">
-                <div className="flex flex-col h-full">
-                  <div className="grid grid-cols-12 gap-y-2">
-                    <div className="col-start-1 col-end-8 p-3 rounded-lg">
-                      <div className="flex flex-row items-center">
-                        <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
-                          A
-                        </div>
-                        <div className="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl">
-                          <div>Hey How are you today?</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="col-start-6 col-end-13 p-3 rounded-lg">
-                      <div className="flex items-center justify-start flex-row-reverse">
-                        <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
-                          A
-                        </div>
-                        <div className="relative mr-3 text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl">
-                          <div>I'm ok what about you?</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-row items-center h-16 rounded-xl bg-white w-full px-4">
-                <div className="flex-grow ml-4">
-                  <div className="relative w-full">
+            <div>
+              {!show ? (
+                <h1 className="ms-2 text-center mb-5 font-semibold text-gray-500 dark:text-gray-400">
+                  Welcome {name} to our chat
+                </h1>
+              ) : (
+                <div>
+                  <label className="input input-bordered flex items-center gap-2 mr-5 mb-2">
+                    Name
                     <input
                       type="text"
-                      className="flex w-full border rounded-xl focus:outline-none focus:border-indigo-300 pl-4 h-10"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="grow"
+                      placeholder="Ariful Islam"
                     />
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <button className="flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white px-4 py-1 flex-shrink-0">
-                    <span>Send</span>
-                    <span className="ml-2">
-                      <svg
-                        className="w-4 h-4 transform rotate-45 -mt-px"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                        ></path>
-                      </svg>
-                    </span>
+                  </label>
+                  <label className="input input-bordered flex items-center gap-2 mr-5 mb-2">
+                    Email
+                    <input
+                      type="text"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="grow"
+                      placeholder="arifkhan@gmail.com"
+                    />
+                  </label>
+                  <label className="input input-bordered flex items-center gap-2 mr-5 mb-2">
+                    Phone
+                    <input
+                      type="text"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="grow"
+                      placeholder="+8801764297928"
+                    />
+                  </label>
+                  <button className="btn" onClick={handleName}>
+                    SUBMIT
                   </button>
                 </div>
-              </div>
+              )}
+
+              {messages != null
+                ? messages.map((message, index) => (
+                    <div
+                      key={index}
+                      className={
+                        message.name === "admin"
+                          ? "chat chat-end"
+                          : "chat chat-start"
+                      }
+                    >
+                      <div className="chat-bubble">
+                        {index % 2 == 0 ? "You: " : "Admin: "}
+                        {message.message}
+                      </div>
+                    </div>
+                  ))
+                : ""}
+
+              {!show ? (
+                <div>
+                  <div className="flex justify-center items-center mb-3">
+                    <button
+                      className="btn mx-auto my-auto"
+                      onClick={hanlderFirstChat}
+                    >
+                      <div className="bg-yellow-200 leading-none ${props.textColor} rounded-sm p-2 shadow text-teal text-sm">
+                        <span className="inline-flex text-pink-700">
+                          How can I book a flight with your travel agency?
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+                  <div className="flex justify-center items-center mb-3">
+                    <button
+                      className="btn mx-auto my-auto"
+                      onClick={hanlderSecondChat}
+                    >
+                      <div className="bg-yellow-200 leading-none ${props.textColor} rounded-sm p-2 shadow text-teal text-sm">
+                        <span className="inline-flex text-pink-700">
+                          Can you recommend family-friendly vacation packages?
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+                  <div className="flex justify-center items-center mb-3">
+                    <button
+                      className="btn mx-auto my-auto"
+                      onClick={hanlderThirdChat}
+                    >
+                      <div className="bg-yellow-200 leading-none ${props.textColor} rounded-sm p-2 shadow text-teal text-sm">
+                        <span className="inline-flex text-pink-700">
+                          What documents do I need for international travel?
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+
+                  <textarea
+                    placeholder="Type your message here..."
+                    value={mes}
+                    onChange={(e) => setMes(e.target.value)}
+                    className="textarea textarea-bordered textarea-xs w-full"
+                  ></textarea>
+                  <button
+                    className="btn mt-5 btn-xs sm:btn-sm md:btn-md lg:btn-lg"
+                    onClick={handler}
+                  >
+                    Send Message
+                  </button>
+                </div>
+              ) : (
+                ""
+              )}
             </div>
           </div>
-        </div>
+          <form method="dialog" className="modal-backdrop">
+            <button>close</button>
+          </form>
+        </dialog>
       </div>
     </>
   );

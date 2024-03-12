@@ -7,6 +7,7 @@ import Single from "./Single";
 import Study from "./Study";
 import Couple from "./couple";
 import Location from "./Location";
+import Chat from "./Chat";
 
 export default function LandingPage() {
   return (
@@ -62,6 +63,7 @@ export default function LandingPage() {
       <Couple />
       <AboutUs />
       <Location />
+      <Chat />
     </div>
   );
 }
